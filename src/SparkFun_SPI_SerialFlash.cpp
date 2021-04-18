@@ -138,17 +138,25 @@ bool SFE_SPI_FLASH::isConnected()
 }
 
 //Send command to do a full erase of the entire flash space
-void SFE_SPI_FLASH::erase()
+sfe_flash_read_write_result_e SFE_SPI_FLASH::erase()
 {
+  if (blockingBusyWait(1000) == false) return (SFE_FLASH_READ_WRITE_FAIL_DEVICE_BUSY); //Wait for device to complete previous actions
+
   _spiPort->beginTransaction(SPISettings(_spiPortSpeed, MSBFIRST, _spiMode));
-  //Write enable
-  digitalWrite(_PIN_FLASH_CS, LOW);
-  _spiPort->transfer(SFE_FLASH_COMMAND_WRITE_ENABLE); //Sets the WEL bit to 1
-  digitalWrite(_PIN_FLASH_CS, HIGH);
+
+  if (_writeEnabled == false)
+  {
+    //Write enable
+    digitalWrite(_PIN_FLASH_CS, LOW);
+    _spiPort->transfer(SFE_FLASH_COMMAND_WRITE_ENABLE); //Sets the WEL bit to 1
+    digitalWrite(_PIN_FLASH_CS, HIGH);
+    _writeEnabled = true; //Update _writeEnabled
+  }
 
   digitalWrite(_PIN_FLASH_CS, LOW);
   _spiPort->transfer(SFE_FLASH_COMMAND_CHIP_ERASE); //Do entire chip erase
   digitalWrite(_PIN_FLASH_CS, HIGH);
+
   _spiPort->endTransaction();
 
   if (_printDebug == true)
@@ -175,6 +183,8 @@ void SFE_SPI_FLASH::erase()
     _debugSerial->print(F("SFE_SPI_FLASH::erase: Time taken: "));
     _debugSerial->println( ((float)(stopTime - startTime)) / 1000.0, 3);
   }
+
+  return (disableWrite());
 }
 
 //Reads a byte from a given location
@@ -234,12 +244,16 @@ sfe_flash_read_write_result_e SFE_SPI_FLASH::writeByte(uint32_t address, uint8_t
   if (blockingBusyWait(100) == false) return (SFE_FLASH_READ_WRITE_FAIL_DEVICE_BUSY); //Wait for device to complete previous actions
 
   _spiPort->beginTransaction(SPISettings(_spiPortSpeed, MSBFIRST, _spiMode));
-  //Write enable
-  digitalWrite(_PIN_FLASH_CS, LOW);
-  _spiPort->transfer(SFE_FLASH_COMMAND_WRITE_ENABLE); //Sets the WEL bit to 1
-  digitalWrite(_PIN_FLASH_CS, HIGH);
 
-  //Write enable
+  if (_writeEnabled == false)
+  {
+    //Write enable
+    digitalWrite(_PIN_FLASH_CS, LOW);
+    _spiPort->transfer(SFE_FLASH_COMMAND_WRITE_ENABLE); //Sets the WEL bit to 1
+    digitalWrite(_PIN_FLASH_CS, HIGH);
+    _writeEnabled = true; //Update _writeEnabled
+  }
+
   digitalWrite(_PIN_FLASH_CS, LOW);
   _spiPort->transfer(SFE_FLASH_COMMAND_PAGE_PROGRAM); //Byte/Page program
   _spiPort->transfer(address >> 16); //Address byte MSB
@@ -247,6 +261,7 @@ sfe_flash_read_write_result_e SFE_SPI_FLASH::writeByte(uint32_t address, uint8_t
   _spiPort->transfer(address & 0xFF); //Address byte LSB
   _spiPort->transfer(thingToWrite); //Data!
   digitalWrite(_PIN_FLASH_CS, HIGH);
+  
   _spiPort->endTransaction();
 
   return(SFE_FLASH_READ_WRITE_SUCCESS);
@@ -258,12 +273,16 @@ sfe_flash_read_write_result_e SFE_SPI_FLASH::writeBlock(uint32_t address, uint8_
   if (blockingBusyWait(100) == false) return (SFE_FLASH_READ_WRITE_FAIL_DEVICE_BUSY); //Wait for device to complete previous actions
 
   _spiPort->beginTransaction(SPISettings(_spiPortSpeed, MSBFIRST, _spiMode));
-  //Write enable
-  digitalWrite(_PIN_FLASH_CS, LOW);
-  _spiPort->transfer(SFE_FLASH_COMMAND_WRITE_ENABLE); //Sets the WEL bit to 1
-  digitalWrite(_PIN_FLASH_CS, HIGH);
 
-  //Write enable
+  if (_writeEnabled == false)
+  {
+    //Write enable
+    digitalWrite(_PIN_FLASH_CS, LOW);
+    _spiPort->transfer(SFE_FLASH_COMMAND_WRITE_ENABLE); //Sets the WEL bit to 1
+    digitalWrite(_PIN_FLASH_CS, HIGH);
+    _writeEnabled = true; //Update _writeEnabled
+  }
+
   digitalWrite(_PIN_FLASH_CS, LOW);
   _spiPort->transfer(SFE_FLASH_COMMAND_PAGE_PROGRAM); //Byte/Page program
   _spiPort->transfer(address >> 16); //Address byte MSB
@@ -476,6 +495,23 @@ const char *SFE_SPI_FLASH::manufacturerIDString(sfe_flash_manufacturer_e manufac
     break;
   }
   return "UNKNOWN"; // Just in case. Redundant?
+}
+
+//Disable writing with SFE_FLASH_COMMAND_WRITE_DISABLE
+sfe_flash_read_write_result_e SFE_SPI_FLASH::disableWrite()
+{
+  if (blockingBusyWait(100) == false) return (SFE_FLASH_READ_WRITE_FAIL_DEVICE_BUSY); //Wait for device to complete previous actions
+
+  _spiPort->beginTransaction(SPISettings(_spiPortSpeed, MSBFIRST, _spiMode));
+  //Write disable
+  digitalWrite(_PIN_FLASH_CS, LOW);
+  _spiPort->transfer(SFE_FLASH_COMMAND_WRITE_DISABLE); //Sets the WEL bit to 0
+  digitalWrite(_PIN_FLASH_CS, HIGH);
+  _spiPort->endTransaction();
+
+  _writeEnabled = false; // Update _writeEnabled
+
+  return(SFE_FLASH_READ_WRITE_SUCCESS);
 }
 
 //Enable or disable helpful debug messages

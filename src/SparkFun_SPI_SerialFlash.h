@@ -94,7 +94,7 @@ class SFE_SPI_FLASH
     
     bool begin(uint8_t user_CSPin, uint32_t spiPortSpeed = 2000000, SPIClass &spiPort = SPI, uint8_t spiMode = SPI_MODE0); //Initialize the library. Check that the flash is responding correctly
     bool isConnected(); //Check that the flash is responding correctly
-    void erase(); //Send command to do a full erase of the entire flash space
+    sfe_flash_read_write_result_e erase(); //Send command to do a full erase of the entire flash space
     uint8_t readByte(uint32_t address, sfe_flash_read_write_result_e *result = NULL); //Reads a byte from a given location
     sfe_flash_read_write_result_e readBlock(uint32_t address, uint8_t *dataArray, uint16_t dataSize); //Reads a block of bytes into a given array, from a given location
     sfe_flash_read_write_result_e writeByte(uint32_t address, uint8_t thingToWrite); //Writes a byte to a specific location
@@ -108,6 +108,7 @@ class SFE_SPI_FLASH
     uint8_t getRawManufacturerID(); //Reads the 8-bit Manufacturer ID
     uint16_t getDeviceID(); //Reads the Device ID
     const char *manufacturerIDString(sfe_flash_manufacturer_e manufacturer); //Pretty-print the manufacturer
+    sfe_flash_read_write_result_e disableWrite(); //Disable writing with SFE_FLASH_COMMAND_WRITE_DISABLE
 
     // Enable debug messages using the chosen Serial port (Stream)
     // Boards like the RedBoard Turbo use SerialUSB (not Serial).
@@ -144,6 +145,8 @@ class SFE_SPI_FLASH
     unsigned long _spiPortSpeed;    //Optional user defined port speed
     uint8_t _PIN_FLASH_CS;          //The Chip Select pin
     uint8_t _spiMode;               //Use this SPI mode
+
+    boolean _writeEnabled = false;   //Flag to show if writing has been enabled
 
 };
 
