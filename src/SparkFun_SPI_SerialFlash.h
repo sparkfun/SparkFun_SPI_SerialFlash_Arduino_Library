@@ -146,8 +146,6 @@ class SFE_SPI_FLASH
     uint8_t _PIN_FLASH_CS;          //The Chip Select pin
     uint8_t _spiMode;               //Use this SPI mode
 
-    boolean _writeEnabled = false;   //Flag to show if writing has been enabled
-
 };
 
 #endif

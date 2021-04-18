@@ -144,14 +144,15 @@ sfe_flash_read_write_result_e SFE_SPI_FLASH::erase()
 
   _spiPort->beginTransaction(SPISettings(_spiPortSpeed, MSBFIRST, _spiMode));
 
-  if (_writeEnabled == false)
-  {
-    //Write enable
-    digitalWrite(_PIN_FLASH_CS, LOW);
-    _spiPort->transfer(SFE_FLASH_COMMAND_WRITE_ENABLE); //Sets the WEL bit to 1
-    digitalWrite(_PIN_FLASH_CS, HIGH);
-    _writeEnabled = true; //Update _writeEnabled
-  }
+  //Write enable
+  /*
+  The Write Enable instruction sets the Write Enable Latch (WEL) bit in the Status Register to a
+  1. The WEL bit must be set prior to every Page Program, Quad Page Program, Sector Erase, Block
+  Erase, Chip Erase, Write Status Register and Erase/Program Security Registers instruction.
+  */
+  digitalWrite(_PIN_FLASH_CS, LOW);
+  _spiPort->transfer(SFE_FLASH_COMMAND_WRITE_ENABLE); //Sets the WEL bit to 1
+  digitalWrite(_PIN_FLASH_CS, HIGH);
 
   digitalWrite(_PIN_FLASH_CS, LOW);
   _spiPort->transfer(SFE_FLASH_COMMAND_CHIP_ERASE); //Do entire chip erase
@@ -245,14 +246,15 @@ sfe_flash_read_write_result_e SFE_SPI_FLASH::writeByte(uint32_t address, uint8_t
 
   _spiPort->beginTransaction(SPISettings(_spiPortSpeed, MSBFIRST, _spiMode));
 
-  if (_writeEnabled == false)
-  {
-    //Write enable
-    digitalWrite(_PIN_FLASH_CS, LOW);
-    _spiPort->transfer(SFE_FLASH_COMMAND_WRITE_ENABLE); //Sets the WEL bit to 1
-    digitalWrite(_PIN_FLASH_CS, HIGH);
-    _writeEnabled = true; //Update _writeEnabled
-  }
+  //Write enable
+  /*
+  The Write Enable instruction sets the Write Enable Latch (WEL) bit in the Status Register to a
+  1. The WEL bit must be set prior to every Page Program, Quad Page Program, Sector Erase, Block
+  Erase, Chip Erase, Write Status Register and Erase/Program Security Registers instruction.
+  */
+  digitalWrite(_PIN_FLASH_CS, LOW);
+  _spiPort->transfer(SFE_FLASH_COMMAND_WRITE_ENABLE); //Sets the WEL bit to 1
+  digitalWrite(_PIN_FLASH_CS, HIGH);
 
   digitalWrite(_PIN_FLASH_CS, LOW);
   _spiPort->transfer(SFE_FLASH_COMMAND_PAGE_PROGRAM); //Byte/Page program
@@ -261,7 +263,7 @@ sfe_flash_read_write_result_e SFE_SPI_FLASH::writeByte(uint32_t address, uint8_t
   _spiPort->transfer(address & 0xFF); //Address byte LSB
   _spiPort->transfer(thingToWrite); //Data!
   digitalWrite(_PIN_FLASH_CS, HIGH);
-  
+
   _spiPort->endTransaction();
 
   return(SFE_FLASH_READ_WRITE_SUCCESS);
@@ -274,14 +276,15 @@ sfe_flash_read_write_result_e SFE_SPI_FLASH::writeBlock(uint32_t address, uint8_
 
   _spiPort->beginTransaction(SPISettings(_spiPortSpeed, MSBFIRST, _spiMode));
 
-  if (_writeEnabled == false)
-  {
-    //Write enable
-    digitalWrite(_PIN_FLASH_CS, LOW);
-    _spiPort->transfer(SFE_FLASH_COMMAND_WRITE_ENABLE); //Sets the WEL bit to 1
-    digitalWrite(_PIN_FLASH_CS, HIGH);
-    _writeEnabled = true; //Update _writeEnabled
-  }
+  //Write enable
+  /*
+  The Write Enable instruction sets the Write Enable Latch (WEL) bit in the Status Register to a
+  1. The WEL bit must be set prior to every Page Program, Quad Page Program, Sector Erase, Block
+  Erase, Chip Erase, Write Status Register and Erase/Program Security Registers instruction.
+  */
+  digitalWrite(_PIN_FLASH_CS, LOW);
+  _spiPort->transfer(SFE_FLASH_COMMAND_WRITE_ENABLE); //Sets the WEL bit to 1
+  digitalWrite(_PIN_FLASH_CS, HIGH);
 
   digitalWrite(_PIN_FLASH_CS, LOW);
   _spiPort->transfer(SFE_FLASH_COMMAND_PAGE_PROGRAM); //Byte/Page program
@@ -498,6 +501,13 @@ const char *SFE_SPI_FLASH::manufacturerIDString(sfe_flash_manufacturer_e manufac
 }
 
 //Disable writing with SFE_FLASH_COMMAND_WRITE_DISABLE
+/*
+The Write Disable instruction resets the Write Enable Latch (WEL) bit in the Status Register to
+a 0. The Write Disable instruction is entered by driving /CS low, shifting the instruction code “04h” into the
+DI pin and then driving /CS high. Note that the WEL bit is automatically reset after Power-up and upon
+completion of the Write Status Register, Erase/Program Security Registers, Page Program, Quad Page
+Program, Sector Erase, Block Erase, Chip Erase and Reset instructions.
+*/
 sfe_flash_read_write_result_e SFE_SPI_FLASH::disableWrite()
 {
   if (blockingBusyWait(100) == false) return (SFE_FLASH_READ_WRITE_FAIL_DEVICE_BUSY); //Wait for device to complete previous actions
@@ -508,8 +518,6 @@ sfe_flash_read_write_result_e SFE_SPI_FLASH::disableWrite()
   _spiPort->transfer(SFE_FLASH_COMMAND_WRITE_DISABLE); //Sets the WEL bit to 0
   digitalWrite(_PIN_FLASH_CS, HIGH);
   _spiPort->endTransaction();
-
-  _writeEnabled = false; // Update _writeEnabled
 
   return(SFE_FLASH_READ_WRITE_SUCCESS);
 }
