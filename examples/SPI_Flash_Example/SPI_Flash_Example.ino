@@ -86,6 +86,7 @@ void loop()
       if (x % 16 == 0) {
         Serial.println();
         Serial.print("0x");
+        if (x < 0x100) Serial.print("0");
         if (x < 0x10) Serial.print("0");
         Serial.print(x, HEX);
         Serial.print(": ");

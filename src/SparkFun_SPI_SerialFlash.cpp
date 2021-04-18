@@ -185,7 +185,7 @@ sfe_flash_read_write_result_e SFE_SPI_FLASH::erase()
     _debugSerial->println( ((float)(stopTime - startTime)) / 1000.0, 3);
   }
 
-  return (disableWrite());
+  return (SFE_FLASH_READ_WRITE_SUCCESS);
 }
 
 //Reads a byte from a given location
