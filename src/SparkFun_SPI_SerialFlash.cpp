@@ -1,37 +1,37 @@
 /*
-    Functions to erase and write to SPI serial flash such as
-    128mb W25Q128JV
-    4mbit AT25SF041
-    16mbit GD25Q16C
-    64mbit AT45DB641E
-    32mbit IS25WP032D
+  Functions to erase and write to SPI serial flash such as
+  128mb W25Q128JV
+  4mbit AT25SF041
+  16mbit GD25Q16C
+  64mbit AT45DB641E
+  32mbit IS25WP032D
 
-    Not designed to work with serial EEPROMs such as:
-    Microchip 25xx SPI Bus Serial EEPROM
-    ST 25xx SPI Bus EEPROM
+  Not designed to work with serial EEPROMs such as:
+  Microchip 25xx SPI Bus Serial EEPROM
+  ST 25xx SPI Bus EEPROM
 
-    https://github.com/sparkfun/SparkFun_SPI_SerialFlash_Arduino_Library
+  https://github.com/sparkfun/SparkFun_SPI_SerialFlash_Arduino_Library
 
-    Development environment specifics:
-    Arduino IDE 1.8.13
+  Development environment specifics:
+  Arduino IDE 1.8.13
 
-    SparkFun code, firmware, and software is released under the MIT License(http://opensource.org/licenses/MIT).
-    The MIT License (MIT)
-    Copyright (c) 20121 SparkFun Electronics
-    Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
-    associated documentation files (the "Software"), to deal in the Software without restriction,
-    including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
-    and/or sell copies of the Software, and to permit persons to whom the Software is furnished to
-    do so, subject to the following conditions:
+  SparkFun code, firmware, and software is released under the MIT License(http://opensource.org/licenses/MIT).
+  The MIT License (MIT)
+  Copyright (c) 2021 SparkFun Electronics
+  Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+  associated documentation files (the "Software"), to deal in the Software without restriction,
+  including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense,
+  and/or sell copies of the Software, and to permit persons to whom the Software is furnished to
+  do so, subject to the following conditions:
 
-    The above copyright notice and this permission notice shall be included in all copies or substantial
-    portions of the Software.
+  The above copyright notice and this permission notice shall be included in all copies or substantial
+  portions of the Software.
 
-    THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
-    NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-    IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
-    WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-    SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+  NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
 #include "SparkFun_SPI_SerialFlash.h"
@@ -44,12 +44,12 @@ SFE_SPI_FLASH::SFE_SPI_FLASH(void)
 //Initialize the library. Check that the flash is responding correctly
 bool SFE_SPI_FLASH::begin(uint8_t user_CSPin, uint32_t spiPortSpeed, SPIClass &spiPort, uint8_t spiMode)
 {
-	//Get user settings
-	_PIN_FLASH_CS = user_CSPin;
-	_spiPort = &spiPort;
-	_spiPortSpeed = spiPortSpeed;
-	//if (_spiPortSpeed > 8000000)
-	//	_spiPortSpeed = 8000000;
+  //Get user settings
+  _PIN_FLASH_CS = user_CSPin;
+  _spiPort = &spiPort;
+  _spiPortSpeed = spiPortSpeed;
+  //if (_spiPortSpeed > 8000000)
+  //	_spiPortSpeed = 8000000;
   _spiMode = spiMode;
 
   pinMode(_PIN_FLASH_CS, OUTPUT);     //Make the CS pin an output
@@ -287,7 +287,7 @@ bool SFE_SPI_FLASH::isBusy()
   }
 }
 
-bool SFE_SPI_FLASH::blockingBusyWait(uint16_t maxWait) //TODO: Pass this value in with a default of 100
+bool SFE_SPI_FLASH::blockingBusyWait(uint16_t maxWait)
 {
   //Wait for device to complete previous actions
   while (isBusy() == true)
