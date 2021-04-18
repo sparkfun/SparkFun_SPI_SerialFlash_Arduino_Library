@@ -1,0 +1,63 @@
+#######################################
+# Syntax Coloring Map
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+SFE_SPI_FLASH	KEYWORD1
+
+sfe_flash_commands_e	KEYWORD1
+sfe_flash_family_e	KEYWORD1
+sfe_flash_manufacturer_e	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+begin	KEYWORD2
+isConnected	KEYWORD2
+erase	KEYWORD2
+readByte	KEYWORD2
+readBlock	KEYWORD2
+writeByte	KEYWORD2
+writeBlock	KEYWORD2
+isBusy	KEYWORD2
+blockingBusyWait	KEYWORD2
+getStatus1	KEYWORD2
+getStatus16	KEYWORD2
+getJEDEC	KEYWORD2
+getManufacturerID	KEYWORD2
+getRawManufacturerID	KEYWORD2
+getDeviceID	KEYWORD2
+manufacturerIDString	KEYWORD2
+enableDebugging	KEYWORD2
+disableDebugging	KEYWORD2
+debugPrint	KEYWORD2
+debugPrintln	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+SFE_FLASH_COMMAND_PAGE_PROGRAM	LITERAL1
+SFE_FLASH_COMMAND_READ_DATA	LITERAL1
+SFE_FLASH_COMMAND_READ_STATUS_25XX	LITERAL1
+SFE_FLASH_COMMAND_WRITE_ENABLE	LITERAL1
+SFE_FLASH_COMMAND_READ_JEDEC_ID	LITERAL1
+SFE_FLASH_COMMAND_CHIP_ERASE	LITERAL1
+SFE_FLASH_COMMAND_READ_STATUS_45XX	LITERAL1
+
+SFE_FLASH_FAMILY_25XX	LITERAL1
+SFE_FLASH_FAMILY_45XX	LITERAL1
+
+SFE_FLASH_MFG_INFINEON	LITERAL1
+SFE_FLASH_MFG_ADESTO	LITERAL1
+SFE_FLASH_MFG_MICRON	LITERAL1
+SFE_FLASH_MFG_ISSI	LITERAL1
+SFE_FLASH_MFG_MICROCHIP	LITERAL1
+SFE_FLASH_MFG_MACRONIX	LITERAL1
+SFE_FLASH_MFG_GIGADEVICE	LITERAL1
+SFE_FLASH_MFG_WINBOND	LITERAL1
+SFE_FLASH_MFG_UNKNOWN	LITERAL1
