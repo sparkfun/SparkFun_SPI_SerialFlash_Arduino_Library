@@ -1,5 +1,5 @@
 /*
-  Functions to erase and write to SPI serial flash such as
+  Functions to erase, read from and write to SPI serial flash such as
   128mb W25Q128JV
   4mbit AT25SF041
   16mbit GD25Q16C
@@ -178,9 +178,16 @@ void SFE_SPI_FLASH::erase()
 }
 
 //Reads a byte from a given location
-uint8_t SFE_SPI_FLASH::readByte(uint32_t address)
+uint8_t SFE_SPI_FLASH::readByte(uint32_t address, sfe_flash_read_write_result_e *result)
 {
-  if (blockingBusyWait(100) == false) return (0xBB); //TODO: Return error //Wait for device to complete previous actions
+  if (blockingBusyWait(100) == false) //Wait for device to complete previous actions
+  {
+    if (result != NULL)
+    {
+      *result = SFE_FLASH_READ_WRITE_FAIL_DEVICE_BUSY;
+    }
+    return (0xBB); // Return booboo (because we have to return something...)
+  }
 
   _spiPort->beginTransaction(SPISettings(_spiPortSpeed, MSBFIRST, _spiMode));
   //Begin reading
@@ -193,13 +200,18 @@ uint8_t SFE_SPI_FLASH::readByte(uint32_t address)
   digitalWrite(_PIN_FLASH_CS, HIGH);
   _spiPort->endTransaction();
 
+  if (result != NULL)
+  {
+    *result = SFE_FLASH_READ_WRITE_SUCCESS;
+  }
+
   return (response);
 }
 
 //Reads a block of bytes into a given array, from a given location
-uint8_t SFE_SPI_FLASH::readBlock(uint32_t address, uint8_t * dataArray, uint16_t dataSize)
+sfe_flash_read_write_result_e SFE_SPI_FLASH::readBlock(uint32_t address, uint8_t * dataArray, uint16_t dataSize)
 {
-  if (blockingBusyWait(100) == false) return (0xBB); //TODO: Return error //Wait for device to complete previous actions
+  if (blockingBusyWait(100) == false) return (SFE_FLASH_READ_WRITE_FAIL_DEVICE_BUSY); //Wait for device to complete previous actions
 
   _spiPort->beginTransaction(SPISettings(_spiPortSpeed, MSBFIRST, _spiMode));
   //Begin reading
@@ -213,13 +225,13 @@ uint8_t SFE_SPI_FLASH::readBlock(uint32_t address, uint8_t * dataArray, uint16_t
   digitalWrite(_PIN_FLASH_CS, HIGH);
   _spiPort->endTransaction();
 
-  return(true); //TODO Return success
+  return(SFE_FLASH_READ_WRITE_SUCCESS);
 }
 
 //Writes a byte to a specific location
-uint8_t SFE_SPI_FLASH::writeByte(uint32_t address, uint8_t thingToWrite)
+sfe_flash_read_write_result_e SFE_SPI_FLASH::writeByte(uint32_t address, uint8_t thingToWrite)
 {
-  if (blockingBusyWait(100) == false) return (0xBB); //TODO: Return error //Wait for device to complete previous actions
+  if (blockingBusyWait(100) == false) return (SFE_FLASH_READ_WRITE_FAIL_DEVICE_BUSY); //Wait for device to complete previous actions
 
   _spiPort->beginTransaction(SPISettings(_spiPortSpeed, MSBFIRST, _spiMode));
   //Write enable
@@ -237,13 +249,13 @@ uint8_t SFE_SPI_FLASH::writeByte(uint32_t address, uint8_t thingToWrite)
   digitalWrite(_PIN_FLASH_CS, HIGH);
   _spiPort->endTransaction();
 
-  return(true); //TODO Return success
+  return(SFE_FLASH_READ_WRITE_SUCCESS);
 }
 
 //Writes a byte to a specific location
-uint8_t SFE_SPI_FLASH::writeBlock(uint32_t address, uint8_t *dataArray, uint16_t dataSize)
+sfe_flash_read_write_result_e SFE_SPI_FLASH::writeBlock(uint32_t address, uint8_t *dataArray, uint16_t dataSize)
 {
-  if (blockingBusyWait(100) == false) return (0xBB); //TODO: Return error //Wait for device to complete previous actions
+  if (blockingBusyWait(100) == false) return (SFE_FLASH_READ_WRITE_FAIL_DEVICE_BUSY); //Wait for device to complete previous actions
 
   _spiPort->beginTransaction(SPISettings(_spiPortSpeed, MSBFIRST, _spiMode));
   //Write enable
@@ -264,7 +276,7 @@ uint8_t SFE_SPI_FLASH::writeBlock(uint32_t address, uint8_t *dataArray, uint16_t
   digitalWrite(_PIN_FLASH_CS, HIGH);
   _spiPort->endTransaction();
 
-  return(true); //TODO: Return sucess  
+  return(SFE_FLASH_READ_WRITE_SUCCESS);
 }
 
 //Returns true if the device Busy bit is set
@@ -287,6 +299,7 @@ bool SFE_SPI_FLASH::isBusy()
   }
 }
 
+//Wait for busy flag to clear
 bool SFE_SPI_FLASH::blockingBusyWait(uint16_t maxWait)
 {
   //Wait for device to complete previous actions

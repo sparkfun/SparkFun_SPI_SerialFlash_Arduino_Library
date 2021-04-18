@@ -1,5 +1,5 @@
 /*
-  Functions to erase and write to SPI serial flash such as
+  Functions to erase, read from and write to SPI serial flash such as
   128mb W25Q128JV
   4mbit AT25SF041
   16mbit GD25Q16C
@@ -79,6 +79,13 @@ typedef enum
   SFE_FLASH_MFG_UNKNOWN = 0xFF
 } sfe_flash_manufacturer_e;
 
+// Read and write result codes
+typedef enum
+{
+  SFE_FLASH_READ_WRITE_FAIL_DEVICE_BUSY = 0, // Just in case result is cast to boolean
+  SFE_FLASH_READ_WRITE_SUCCESS = 1 // Just in case result is cast to boolean
+} sfe_flash_read_write_result_e;
+
 class SFE_SPI_FLASH
 {
 
@@ -88,12 +95,12 @@ class SFE_SPI_FLASH
     bool begin(uint8_t user_CSPin, uint32_t spiPortSpeed = 2000000, SPIClass &spiPort = SPI, uint8_t spiMode = SPI_MODE0); //Initialize the library. Check that the flash is responding correctly
     bool isConnected(); //Check that the flash is responding correctly
     void erase(); //Send command to do a full erase of the entire flash space
-    uint8_t readByte(uint32_t address); //Reads a byte from a given location
-    uint8_t readBlock(uint32_t address, uint8_t *dataArray, uint16_t dataSize); //Reads a block of bytes into a given array, from a given location
-    uint8_t writeByte(uint32_t address, uint8_t thingToWrite); //Writes a byte to a specific location
-    uint8_t writeBlock(uint32_t address, uint8_t *dataArray, uint16_t dataSize); //Writes a byte to a specific location
+    uint8_t readByte(uint32_t address, sfe_flash_read_write_result_e *result = NULL); //Reads a byte from a given location
+    sfe_flash_read_write_result_e readBlock(uint32_t address, uint8_t *dataArray, uint16_t dataSize); //Reads a block of bytes into a given array, from a given location
+    sfe_flash_read_write_result_e writeByte(uint32_t address, uint8_t thingToWrite); //Writes a byte to a specific location
+    sfe_flash_read_write_result_e writeBlock(uint32_t address, uint8_t *dataArray, uint16_t dataSize); //Writes a byte to a specific location
     bool isBusy(); //Returns true if the device Busy bit is set
-    bool blockingBusyWait(uint16_t maxWait = 100); //Wait for bust flag to clear
+    bool blockingBusyWait(uint16_t maxWait = 100); //Wait for busy flag to clear
     uint8_t getStatus1(); //Returns status byte 0 in 25xx types of flash. Useful for BUSY testing.
     uint16_t getStatus16(); //Returns the two status bytes found in 45xx types of flash.
     uint32_t getJEDEC(); //Returns the three Manufacturer ID and Device ID bytes
