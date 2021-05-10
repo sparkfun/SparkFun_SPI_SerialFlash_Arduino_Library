@@ -48,11 +48,13 @@
 // Flash Commands
 typedef enum
 {
+  SFE_FLASH_COMMAND_WRITE_STATUS_REG = 0x01,
   SFE_FLASH_COMMAND_PAGE_PROGRAM = 0x02,
   SFE_FLASH_COMMAND_READ_DATA = 0x03,
   SFE_FLASH_COMMAND_WRITE_DISABLE = 0x04,
   SFE_FLASH_COMMAND_READ_STATUS_25XX = 0x05,
   SFE_FLASH_COMMAND_WRITE_ENABLE = 0x06,
+  SFE_FLASH_COMMAND_ENABLE_WRITE_STATUS_REG = 0x50,
   SFE_FLASH_COMMAND_READ_JEDEC_ID = 0x9F,
   SFE_FLASH_COMMAND_CHIP_ERASE = 0xC7,
   SFE_FLASH_COMMAND_READ_STATUS_45XX = 0xD7
@@ -103,6 +105,8 @@ class SFE_SPI_FLASH
     bool blockingBusyWait(uint16_t maxWait = 100); //Wait for busy flag to clear
     uint8_t getStatus1(); //Returns status byte 0 in 25xx types of flash. Useful for BUSY testing.
     uint16_t getStatus16(); //Returns the two status bytes found in 45xx types of flash.
+    sfe_flash_read_write_result_e setWriteStatusReg1(uint8_t statusByte); // Writes statusByte to the Status Register
+    sfe_flash_read_write_result_e setWriteStatusReg16(uint16_t statusWord); // Writes statusWord to the Status Register and Status Register 1
     uint32_t getJEDEC(); //Returns the three Manufacturer ID and Device ID bytes
     sfe_flash_manufacturer_e getManufacturerID(); //Reads the 8-bit Manufacturer ID as an enum
     uint8_t getRawManufacturerID(); //Reads the 8-bit Manufacturer ID

@@ -364,6 +364,49 @@ uint16_t SFE_SPI_FLASH::getStatus16()
   return (response);
 }
 
+//Set the write status register in 25xx types of flash. Useful for clearing the Block Protetction bits
+sfe_flash_read_write_result_e SFE_SPI_FLASH::setWriteStatusReg1(uint8_t statusByte)
+{
+  if (blockingBusyWait(100) == false) return (SFE_FLASH_READ_WRITE_FAIL_DEVICE_BUSY); //Wait for device to complete previous actions
+
+  _spiPort->beginTransaction(SPISettings(_spiPortSpeed, MSBFIRST, _spiMode));
+
+  digitalWrite(_PIN_FLASH_CS, LOW);
+  _spiPort->transfer(SFE_FLASH_COMMAND_ENABLE_WRITE_STATUS_REG); //Enable status register writing
+  digitalWrite(_PIN_FLASH_CS, HIGH);
+
+  digitalWrite(_PIN_FLASH_CS, LOW);
+  _spiPort->transfer(SFE_FLASH_COMMAND_WRITE_STATUS_REG);
+  _spiPort->transfer(statusByte);
+  digitalWrite(_PIN_FLASH_CS, HIGH);
+
+  _spiPort->endTransaction();
+
+  return(SFE_FLASH_READ_WRITE_SUCCESS);
+}
+
+//Set the write status registers in 25xx types of flash. Useful for clearing the Block Protetction bits
+sfe_flash_read_write_result_e SFE_SPI_FLASH::setWriteStatusReg16(uint16_t statusWord)
+{
+  if (blockingBusyWait(100) == false) return (SFE_FLASH_READ_WRITE_FAIL_DEVICE_BUSY); //Wait for device to complete previous actions
+
+  _spiPort->beginTransaction(SPISettings(_spiPortSpeed, MSBFIRST, _spiMode));
+
+  digitalWrite(_PIN_FLASH_CS, LOW);
+  _spiPort->transfer(SFE_FLASH_COMMAND_ENABLE_WRITE_STATUS_REG); //Enable status register writing
+  digitalWrite(_PIN_FLASH_CS, HIGH);
+
+  digitalWrite(_PIN_FLASH_CS, LOW);
+  _spiPort->transfer(SFE_FLASH_COMMAND_WRITE_STATUS_REG);
+  _spiPort->transfer(statusWord >> 8);
+  _spiPort->transfer(statusWord & 0xFF);
+  digitalWrite(_PIN_FLASH_CS, HIGH);
+
+  _spiPort->endTransaction();
+
+  return(SFE_FLASH_READ_WRITE_SUCCESS);
+}
+
 //Returns the three Manufacturer ID and Device ID bytes
 uint32_t SFE_SPI_FLASH::getJEDEC()
 {

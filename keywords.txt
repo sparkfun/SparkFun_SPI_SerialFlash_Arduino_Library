@@ -27,6 +27,8 @@ isBusy	KEYWORD2
 blockingBusyWait	KEYWORD2
 getStatus1	KEYWORD2
 getStatus16	KEYWORD2
+setWriteStatusReg1	KEYWORD2
+setWriteStatusReg16	KEYWORD2
 getJEDEC	KEYWORD2
 getManufacturerID	KEYWORD2
 getRawManufacturerID	KEYWORD2
