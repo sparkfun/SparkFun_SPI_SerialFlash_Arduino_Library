@@ -222,6 +222,9 @@ uint8_t SFE_SPI_FLASH::readByte(uint32_t address, sfe_flash_read_write_result_e 
 //Reads a block of bytes into a given array, from a given location
 sfe_flash_read_write_result_e SFE_SPI_FLASH::readBlock(uint32_t address, uint8_t * dataArray, uint16_t dataSize)
 {
+  if (dataSize == 0) // Bail if dataSize is zero
+    return(SFE_FLASH_READ_WRITE_ZERO_SIZE);
+
   if (blockingBusyWait(100) == false) return (SFE_FLASH_READ_WRITE_FAIL_DEVICE_BUSY); //Wait for device to complete previous actions
 
   _spiPort->beginTransaction(SPISettings(_spiPortSpeed, MSBFIRST, _spiMode));
@@ -269,9 +272,12 @@ sfe_flash_read_write_result_e SFE_SPI_FLASH::writeByte(uint32_t address, uint8_t
   return(SFE_FLASH_READ_WRITE_SUCCESS);
 }
 
-//Writes a byte to a specific location
+//Write bytes to a specific location
 sfe_flash_read_write_result_e SFE_SPI_FLASH::writeBlock(uint32_t address, uint8_t *dataArray, uint16_t dataSize)
 {
+  if (dataSize == 0) // Bail if dataSize is zero
+    return(SFE_FLASH_READ_WRITE_ZERO_SIZE);
+
   if (blockingBusyWait(100) == false) return (SFE_FLASH_READ_WRITE_FAIL_DEVICE_BUSY); //Wait for device to complete previous actions
 
   _spiPort->beginTransaction(SPISettings(_spiPortSpeed, MSBFIRST, _spiMode));
@@ -297,6 +303,70 @@ sfe_flash_read_write_result_e SFE_SPI_FLASH::writeBlock(uint32_t address, uint8_
 
   digitalWrite(_PIN_FLASH_CS, HIGH);
   _spiPort->endTransaction();
+
+  return(SFE_FLASH_READ_WRITE_SUCCESS);
+}
+
+//Write bytes to a specific location using Auto Address Increment
+//This is how multiple bytes are written to (e.g.) the Microchip SST25VF020B
+sfe_flash_read_write_result_e SFE_SPI_FLASH::writeBlockAAI(uint32_t address, uint8_t *dataArray, uint16_t dataSize)
+{
+  if (dataSize == 0) // Bail if dataSize is zero
+    return(SFE_FLASH_READ_WRITE_ZERO_SIZE);
+
+  if (dataSize == 1) // AAI can only write byte pairs. If dataSize is 1, just do a writeByte
+    return(writeByte(address, dataArray[0]));
+
+  if (blockingBusyWait(100) == false) return (SFE_FLASH_READ_WRITE_FAIL_DEVICE_BUSY); //Wait for device to complete previous actions
+
+  _spiPort->beginTransaction(SPISettings(_spiPortSpeed, MSBFIRST, _spiMode));
+
+  //DBSY: Disable SO as RY/BY# Status during AAI Programming. We will poll the busy flag instead.
+  digitalWrite(_PIN_FLASH_CS, LOW);
+  _spiPort->transfer(SFE_FLASH_COMMAND_DISABLE_SO_DURING_AAI);
+  digitalWrite(_PIN_FLASH_CS, HIGH);
+
+  //Write enable
+  /*
+  The Write Enable instruction sets the Write Enable Latch (WEL) bit in the Status Register to a
+  1. The WEL bit must be set prior to every Page Program, Quad Page Program, Sector Erase, Block
+  Erase, Chip Erase, Write Status Register and Erase/Program Security Registers instruction.
+  */
+  digitalWrite(_PIN_FLASH_CS, LOW);
+  _spiPort->transfer(SFE_FLASH_COMMAND_WRITE_ENABLE); //Sets the WEL bit to 1
+  digitalWrite(_PIN_FLASH_CS, HIGH);
+
+  //Write the address and the first two bytes of data
+  digitalWrite(_PIN_FLASH_CS, LOW);
+  _spiPort->transfer(SFE_FLASH_COMMAND_AAI_WORD_PROGRAM); //AAI Word program (two bytes)
+  _spiPort->transfer(address >> 16); //Address byte MSB
+  _spiPort->transfer(address >> 8); //Address byte MMSB
+  _spiPort->transfer(address & 0xFF); //Address byte LSB
+  _spiPort->transfer(dataArray[0]); //Data!
+  _spiPort->transfer(dataArray[1]); //Data!
+  digitalWrite(_PIN_FLASH_CS, HIGH);
+
+  //Write the remaining data byte pairs
+  uint16_t x;
+  for (x = 2 ; x < (dataSize - 1); x += 2)
+  {
+    digitalWrite(_PIN_FLASH_CS, LOW);
+    _spiPort->transfer(SFE_FLASH_COMMAND_AAI_WORD_PROGRAM); //AAI Word program (two bytes)
+    _spiPort->transfer(dataArray[x]); //Data!
+    _spiPort->transfer(dataArray[x+1]); //Data!
+    digitalWrite(_PIN_FLASH_CS, HIGH);
+  }
+
+  //WRDI: Write Disable - exit AAI mmode
+  digitalWrite(_PIN_FLASH_CS, LOW);
+  _spiPort->transfer(SFE_FLASH_COMMAND_WRITE_DISABLE);
+  digitalWrite(_PIN_FLASH_CS, HIGH);
+
+  _spiPort->endTransaction();
+
+  //Check if we still have a single byte to write
+  if (x == (dataSize + 1))
+    return(writeByte(address, dataArray[dataSize - 1]));
 
   return(SFE_FLASH_READ_WRITE_SUCCESS);
 }
