@@ -23,6 +23,7 @@ readByte	KEYWORD2
 readBlock	KEYWORD2
 writeByte	KEYWORD2
 writeBlock	KEYWORD2
+writeBlockAAI	KEYWORD2
 isBusy	KEYWORD2
 blockingBusyWait	KEYWORD2
 getStatus1	KEYWORD2

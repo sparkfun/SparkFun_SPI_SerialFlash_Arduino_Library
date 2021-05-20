@@ -48,14 +48,17 @@
 // Flash Commands
 typedef enum
 {
-  SFE_FLASH_COMMAND_WRITE_STATUS_REG = 0x01,
+  SFE_FLASH_COMMAND_WRITE_STATUS_REG = 0x01,        // WRSR
   SFE_FLASH_COMMAND_PAGE_PROGRAM = 0x02,
   SFE_FLASH_COMMAND_READ_DATA = 0x03,
-  SFE_FLASH_COMMAND_WRITE_DISABLE = 0x04,
-  SFE_FLASH_COMMAND_READ_STATUS_25XX = 0x05,
-  SFE_FLASH_COMMAND_WRITE_ENABLE = 0x06,
-  SFE_FLASH_COMMAND_ENABLE_WRITE_STATUS_REG = 0x50,
+  SFE_FLASH_COMMAND_WRITE_DISABLE = 0x04,           // WRDI
+  SFE_FLASH_COMMAND_READ_STATUS_25XX = 0x05,        // RDSR
+  SFE_FLASH_COMMAND_WRITE_ENABLE = 0x06,            // WREN
+  SFE_FLASH_COMMAND_ENABLE_WRITE_STATUS_REG = 0x50, // EWSR
+  SFE_FLASH_COMMAND_ENABLE_SO_DURING_AAI = 0x70,    // EBSY: Enable SO to Output RY/BY# Status during AAI Programming
+  SFE_FLASH_COMMAND_DISABLE_SO_DURING_AAI = 0x80,   // DBSY: Disable SO to Output RY/BY# Status during AAI Programming
   SFE_FLASH_COMMAND_READ_JEDEC_ID = 0x9F,
+  SFE_FLASH_COMMAND_AAI_WORD_PROGRAM = 0xAD,        // Auto Address Increment Programming
   SFE_FLASH_COMMAND_CHIP_ERASE = 0xC7,
   SFE_FLASH_COMMAND_READ_STATUS_45XX = 0xD7
 } sfe_flash_commands_e;
@@ -84,8 +87,9 @@ typedef enum
 // Read and write result codes
 typedef enum
 {
-  SFE_FLASH_READ_WRITE_FAIL_DEVICE_BUSY = 0, // Just in case result is cast to boolean
-  SFE_FLASH_READ_WRITE_SUCCESS = 1 // Just in case result is cast to boolean
+  SFE_FLASH_READ_WRITE_FAIL_DEVICE_BUSY = 0,  // Just in case result is cast to boolean
+  SFE_FLASH_READ_WRITE_SUCCESS = 1,           // Just in case result is cast to boolean
+  SFE_FLASH_READ_WRITE_ZERO_SIZE              // Return this if dataSize is zero
 } sfe_flash_read_write_result_e;
 
 class SFE_SPI_FLASH
@@ -100,7 +104,8 @@ class SFE_SPI_FLASH
     uint8_t readByte(uint32_t address, sfe_flash_read_write_result_e *result = NULL); //Reads a byte from a given location
     sfe_flash_read_write_result_e readBlock(uint32_t address, uint8_t *dataArray, uint16_t dataSize); //Reads a block of bytes into a given array, from a given location
     sfe_flash_read_write_result_e writeByte(uint32_t address, uint8_t thingToWrite); //Writes a byte to a specific location
-    sfe_flash_read_write_result_e writeBlock(uint32_t address, uint8_t *dataArray, uint16_t dataSize); //Writes a byte to a specific location
+    sfe_flash_read_write_result_e writeBlock(uint32_t address, uint8_t *dataArray, uint16_t dataSize); //Write bytes to a specific location
+    sfe_flash_read_write_result_e writeBlockAAI(uint32_t address, uint8_t *dataArray, uint16_t dataSize); //Write bytes to a specific location using Auto Address Increment
     bool isBusy(); //Returns true if the device Busy bit is set
     bool blockingBusyWait(uint16_t maxWait = 100); //Wait for busy flag to clear
     uint8_t getStatus1(); //Returns status byte 0 in 25xx types of flash. Useful for BUSY testing.
