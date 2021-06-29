@@ -365,8 +365,8 @@ sfe_flash_read_write_result_e SFE_SPI_FLASH::writeBlockAAI(uint32_t address, uin
   _spiPort->endTransaction();
 
   //Check if we still have a single byte to write
-  if (x == (dataSize + 1))
-    return(writeByte(address, dataArray[dataSize - 1]));
+  if (x == (dataSize - 1))
+    return(writeByte(address + dataSize - 1, dataArray[dataSize - 1]));
 
   return(SFE_FLASH_READ_WRITE_SUCCESS);
 }
